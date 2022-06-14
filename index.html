@@ -68,18 +68,17 @@ textarea,input[type=text] {
 
     function handleStdOut(output) {
         console.log(output);
-        if (!output.match(/\d+\s+[A-Z_]*/g)) {
+        const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
+        if (!matches) {
           return;
         }
         document.getElementById("disassemble-status").innerHTML = "";
-        var instrFields = output.trim().split(/\s+/);
-        let lineNo = '';
-        if (instrFields.length == 5) {
-          lineNo = instrFields[0];
-          instrFields = instrFields.slice(1);
-        }
-        console.log(instrFields);
-        document.getElementById("disassemble-rows").innerHTML += `<tr><td>${lineNo}<td>${instrFields[0]}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${instrFields[1]}" target="_blank">${instrFields[1]}</a></td><td>${instrFields[2] || ''}<td>${instrFields[3] || ''}`;
+        const lineNo = matches[1] || '';
+        const offset = matches[2];
+        const opcode = matches[3];
+        const param = matches[4] || '';
+        const paramD = matches[5] || '';
+        document.getElementById("disassemble-rows").innerHTML += `<tr><td>${lineNo}<td>${offset}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${opcode}" target="_blank">${opcode}</a></td><td>${param}<td>${paramD}`;
     }
 
     async function main() {
