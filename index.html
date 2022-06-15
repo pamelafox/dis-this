@@ -5,13 +5,22 @@
     <meta name="viewport" content="width=device-width">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <title>Dis This: Online Python Disassembler</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,500|Work+Sans:400,700">
     <style>
-textarea,input[type=text] {
-  font-family: monospace;
-  font-weight: normal;
+.CodeMirror {
+  width: 700px;
+  height: auto;
+  border: 1px solid #ccc;
 }
+.highlighted-line {
+  background-color: yellow;
+}
+#disassemble-output {
+  margin-top: 15px;
+  max-width: 700px;
+}
+
     </style>
     <style>
 
@@ -23,13 +32,13 @@ textarea,input[type=text] {
     <h1>Disassemble Python code</h1>
     <label>Type Python code here:
     <br>
-    <textarea id="code-textarea" rows="10" cols="120" name="function_definition"></textarea>
+    <textarea id="code-textarea" rows="10" cols="120"></textarea>
     </label>
     <br>
     <button id="disassemble-button" type="button" class="btn btn-primary" disabled>Disassemble!</button>
     <span id="disassemble-status">Loading Pyodide...</span>
 
-    <table id="disassemble-output" style="margin-top: 80px; max-width:700px;" class="table table-sm">
+    <table id="disassemble-output" class="table table-sm">
       <thead>
         <tr><th>Line number <th>Offset <th>Opcode name <th>Opcode parameters<th>Interpretation of parameters
       <tbody id="disassemble-rows">
@@ -44,21 +53,15 @@ textarea,input[type=text] {
     </div>
 
     </div>
-    <!-- Python WASM -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js"></script>
-    <!-- Query params functionality-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
     <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    if (code) document.getElementById('code-textarea').value = code;
-    </script>
-    <!-- Python disassembly-->
-    <script>
-    var pyodide;
-    
+    var pyodide, editor, lastLineNo;
+ 
     function disassembleCode() {
         document.getElementById("disassemble-status").innerHTML = "Disassembling...";
-        const code = document.getElementById('code-textarea').value;
+        const code = editor.getValue();
         document.getElementById("disassemble-rows").innerText = '';
         pyodide.runPython(`import dis; dis.dis('''${code}''')`);
         const permalink = `${window.location.origin}/?code=${encodeURIComponent(code)}`.replace(/\(/g, '%28').replace(/\)/g, '%29');
@@ -67,21 +70,34 @@ textarea,input[type=text] {
     }
 
     function handleStdOut(output) {
-        console.log(output);
         const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
         if (!matches) {
           return;
         }
         document.getElementById("disassemble-status").innerHTML = "";
-        const lineNo = matches[1] || '';
+        const lineNo = (matches[1] && parseInt(matches[1], 10)) || lastLineNo;
         const offset = matches[2];
         const opcode = matches[3];
         const param = matches[4] || '';
         const paramD = matches[5] || '';
-        document.getElementById("disassemble-rows").innerHTML += `<tr><td>${lineNo}<td>${offset}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${opcode}" target="_blank">${opcode}</a></td><td>${param}<td>${paramD}`;
+        var newRow = document.createElement('tr');
+        newRow.innerHTML = `<td>${lineNo}<td>${offset}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${opcode}" target="_blank">${opcode}</a></td><td>${param}<td>${paramD}`;
+        document.getElementById("disassemble-rows").appendChild(newRow);
+        newRow.addEventListener('mouseover', () => {
+          for (var i = 0; i <= lastLineNo; i++) editor.getDoc().removeLineClass(i, 'wrap', 'highlighted-line');
+          editor.getDoc().addLineClass((lineNo - 1), 'wrap', 'highlighted-line');
+        });
+        lastLineNo = lineNo;
     }
 
     async function main() {
+      const code = new URLSearchParams(window.location.search).get('code');
+      editor = CodeMirror.fromTextArea(document.getElementById('code-textarea'), {
+        lineNumbers: true,
+        value: code || '',
+        mode: 'python'
+      });
+
       pyodide = await loadPyodide({
         indexURL : "https://cdn.jsdelivr.net/pyodide/v0.19.0/full/",
         stdout: handleStdOut,
