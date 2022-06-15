@@ -32,7 +32,7 @@
     <h1>Disassemble Python code</h1>
     <label>Type Python code here:
     <br>
-    <textarea id="code-textarea" rows="10" cols="120"></textarea>
+    <div id="code-textarea"></div>
     </label>
     <br>
     <button id="disassemble-button" type="button" class="btn btn-primary" disabled>Disassemble!</button>
@@ -92,7 +92,7 @@
 
     async function main() {
       const code = new URLSearchParams(window.location.search).get('code');
-      editor = CodeMirror.fromTextArea(document.getElementById('code-textarea'), {
+      editor = new CodeMirror(document.getElementById('code-textarea'), {
         lineNumbers: true,
         value: code || '',
         mode: 'python'
