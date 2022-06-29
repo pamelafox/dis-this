@@ -1,89 +1,65 @@
-import {basicSetup} from "codemirror"
-import {EditorState, StateField, StateEffect} from "@codemirror/state"
-import {python} from "@codemirror/lang-python"
-import {EditorView, Decoration, gutter, GutterMarker} from "@codemirror/view"
+import './dis-table-element.js';
+import './permalink-element.js';
+import HighlightableEditor from './highlightable-editor.js';
 
-const addLineHighlight = StateEffect.define()
+async function main() {
+  let pyodide,
+    editor,
+    ops = [],
+    disTable,
+    permalink;
+  const codeDiv = document.getElementById('code-area');
+  const button = document.getElementById('button');
+  const statusDiv = document.getElementById('status');
+  const tableDiv = document.getElementById('table-area');
+  const permalinkDiv = document.getElementById('permalink-area');
 
-const lineHighlightField = StateField.define({
-  create() {
-    return Decoration.none;
-  },
-  update(lines, tr) {
-    lines = lines.map(tr.changes);
-    for (let e of tr.effects) {
-      if (e.is(addLineHighlight)) {
-        lines = Decoration.none;  
-        lines = lines.update({add: [lineHighlightMark.range(e.value)]})
-      }
-    }
-    return lines
-  },
-  provide: f => EditorView.decorations.from(f)
-});
+  function disassembleCode() {
+    statusDiv.innerText = 'Disassembling...';
+    ops = [];
+    pyodide.runPython(`import dis; dis.dis('''${editor.getCode()}''')`);
+    statusDiv.innerHTML = '';
+    disTable.setAttribute('operations', JSON.stringify(ops));
+    permalink.setAttribute('code', code);
+  }
 
-const lineHighlightMark = Decoration.line({
-  attributes: {style: "background-color: yellow"}
-});
-
-var pyodide, editor, lastLineNo;
- 
-function disassembleCode() {
-    document.getElementById("disassemble-status").innerHTML = "Disassembling...";
-    const code = editor.state.doc.toString();
-    document.getElementById("disassemble-rows").innerText = '';
-    pyodide.runPython(`import dis; dis.dis('''${code}''')`);
-    const permalink = `${window.location.origin}/?code=${encodeURIComponent(code)}`.replace(/\(/g, '%28').replace(/\)/g, '%29');
-    document.getElementById("permalink-area").style.display = "block";
-    document.getElementById("permalink-input").value = permalink;
-}
-
-function handleStdOut(output) {
-    const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
+  function handleStdOut(output) {
+    const matches = output.match(
+      /\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/
+    );
     if (!matches) {
-        return;
+      return;
     }
-    document.getElementById("disassemble-status").innerHTML = "";
-    const lineNo = (matches[1] && parseInt(matches[1], 10)) || lastLineNo;
+    const lineNo =
+      (matches[1] && parseInt(matches[1], 10)) || ops[ops.length - 1].lineNo;
     const offset = matches[2];
     const opcode = matches[3];
     const param = matches[4] || '';
     const paramD = matches[5] || '';
-    var newRow = document.createElement('tr');
-    newRow.innerHTML = `<td>${lineNo}<td>${offset}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${opcode}" target="_blank">${opcode}</a></td><td>${param}<td>${paramD}`;
-    document.getElementById("disassemble-rows").appendChild(newRow);
-    newRow.addEventListener('mouseover', () => {
-        const docPosition = editor.state.doc.line(lineNo).from;
-        editor.dispatch({
-            effects: addLineHighlight.of(docPosition)
-        })
-    });
-    lastLineNo = lineNo;
-} 
+    ops.push({lineNo, offset, opcode, param, paramD});
+  }
 
-async function main() {
-      const code = new URLSearchParams(window.location.search).get('code');
-      editor = new EditorView({
-          state: EditorState.create({
-              doc: code,
-              extensions: [basicSetup, lineHighlightField, python()]
-           }),
-          parent: document.getElementById('code-textarea')
-      });
-      editor.dom.addEventListener('mousemove', (event) => {
-          const lastMove = {x: event.clientX, y: event.clientY, target: event.target, time: Date.now()}
-          const pos = editor.posAtCoords(lastMove);
-          let lineNo = editor.state.doc.lineAt(pos).number;
-       });
+  const code = new URLSearchParams(window.location.search).get('code');
+  editor = new HighlightableEditor(codeDiv, code, (lineNo) => {
+    disTable.setAttribute('activeLine', lineNo);
+  });
+  disTable = document.createElement('dis-table-element');
+  disTable.setAttribute('operations', JSON.stringify(ops));
+  disTable.addEventListener('line-highlight', (e) => {
+    editor.highlightLine(e.detail.line);
+  });
+  tableDiv.appendChild(disTable);
+  permalink = document.createElement('permalink-element');
+  permalinkDiv.appendChild(permalink);
 
-      pyodide = await loadPyodide({
-        indexURL : "https://cdn.jsdelivr.net/pyodide/v0.19.0/full/",
-        stdout: handleStdOut,
-      });
-      document.getElementById("disassemble-status").innerHTML = "";
-      document.getElementById("disassemble-button").removeAttribute("disabled");
-      document.getElementById("disassemble-button").addEventListener("click", disassembleCode);
-      code && disassembleCode();
-    };
+  pyodide = await loadPyodide({
+    indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/',
+    stdout: handleStdOut,
+  });
+  statusDiv.innerText = '';
+  button.removeAttribute('disabled');
+  button.addEventListener('click', disassembleCode);
+  code && disassembleCode();
+}
 
 main();
