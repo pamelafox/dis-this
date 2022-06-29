@@ -1,114 +1,60 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
     <title>Dis This: Online Python Disassembler</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
     <style>
-.CodeMirror {
-  width: 700px;
-  height: auto;
-  border: 1px solid #ccc;
-}
-.highlighted-line {
-  background-color: yellow;
-}
-#disassemble-output {
-  margin-top: 15px;
-  max-width: 700px;
-}
-
+      .cm-editor {
+        width: 700px;
+        height: auto;
+        border: 1px solid #ccc;
+      }
+      #table-area {
+        margin-top: 15px;
+        margin-bottom: 12px;
+        max-width: 700px;
+      }
     </style>
-    <style>
-
-      </style>
+    <style></style>
   </head>
   <body>
     <div class="container">
+      <h1>Disassemble Python code</h1>
+      <label>Type Python code here:
+        <br />
+        <div id="code-area"></div>
+      </label>
+      <br />
+      <button id="button" type="button" class="btn btn-primary" disabled>
+        Disassemble!
+      </button>
+      <span id="status">Loading Pyodide...</span>
 
-    <h1>Disassemble Python code</h1>
-    <label>Type Python code here:
-    <br>
-    <div id="code-textarea"></div>
-    </label>
-    <br>
-    <button id="disassemble-button" type="button" class="btn btn-primary" disabled>Disassemble!</button>
-    <span id="disassemble-status">Loading Pyodide...</span>
+      <div id="table-area"></div>
+      <div id="permalink-area"></div>
 
-    <table id="disassemble-output" class="table table-sm">
-      <thead>
-        <tr><th>Line number <th>Offset <th>Opcode name <th>Opcode parameters<th>Interpretation of parameters
-      <tbody id="disassemble-rows">
-    </table>
-
-    <div id="permalink-area" style="margin-top:12px; display:none;">
-    <label for="permalink-input">Permalink:</label> <input type="url" id="permalink-input" style="width: 600px;">
-    </div>
- 
-    <div style="margin-top:80px;">
-    <p>Source code on <a href="https://github.com/pamelafox/dis-this" target="_blank">Github</a>. Uses Pyodide and the Python dis module.</p>
-    </div>
-
+      <div style="margin-top: 80px">
+        <p>
+          Source code on
+          <a href="https://github.com/pamelafox/dis-this" target="_blank">
+          Github</a>.
+          Uses
+          <a href="https://pyodide.org/en/stable/" target="_blank">Pyodide</a>,
+          <a href="https://docs.python.org/3/library/dis.html" target="_blank">the Python dis module</a>,
+          <a href="https://codemirror.net/" target="_blank">CodeMirror</a>,
+          and <a href="https://lit.dev/" target="_blank">Lit elements</a>.
+          <br />
+          Inspired by Anthony Shaw's
+          <a href="https://pypi.org/project/instaviz/" target="_blank">Instaviz</a>.
+        </p>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
-    <script>
-    var pyodide, editor, lastLineNo;
- 
-    function disassembleCode() {
-        document.getElementById("disassemble-status").innerHTML = "Disassembling...";
-        const code = editor.getValue();
-        document.getElementById("disassemble-rows").innerText = '';
-        pyodide.runPython(`import dis; dis.dis('''${code}''')`);
-        const permalink = `${window.location.origin}/?code=${encodeURIComponent(code)}`.replace(/\(/g, '%28').replace(/\)/g, '%29');
-        document.getElementById("permalink-area").style.display = "block";
-        document.getElementById("permalink-input").value = permalink;
-    }
-
-    function handleStdOut(output) {
-        const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
-        if (!matches) {
-          return;
-        }
-        document.getElementById("disassemble-status").innerHTML = "";
-        const lineNo = (matches[1] && parseInt(matches[1], 10)) || lastLineNo;
-        const offset = matches[2];
-        const opcode = matches[3];
-        const param = matches[4] || '';
-        const paramD = matches[5] || '';
-        var newRow = document.createElement('tr');
-        newRow.innerHTML = `<td>${lineNo}<td>${offset}<td><a href="https://docs.python.org/3/library/dis.html#opcode-${opcode}" target="_blank">${opcode}</a></td><td>${param}<td>${paramD}`;
-        document.getElementById("disassemble-rows").appendChild(newRow);
-        newRow.addEventListener('mouseover', () => {
-          for (var i = 0; i <= lastLineNo; i++) editor.getDoc().removeLineClass(i, 'wrap', 'highlighted-line');
-          editor.getDoc().addLineClass((lineNo - 1), 'wrap', 'highlighted-line');
-        });
-        lastLineNo = lineNo;
-    }
-
-    async function main() {
-      const code = new URLSearchParams(window.location.search).get('code');
-      editor = new CodeMirror(document.getElementById('code-textarea'), {
-        lineNumbers: true,
-        value: code || '',
-        mode: 'python'
-      });
-
-      pyodide = await loadPyodide({
-        indexURL : "https://cdn.jsdelivr.net/pyodide/v0.19.0/full/",
-        stdout: handleStdOut,
-      });
-      document.getElementById("disassemble-status").innerHTML = "";
-      document.getElementById("disassemble-button").removeAttribute("disabled");
-      document.getElementById("disassemble-button").addEventListener("click", disassembleCode);
-      code && disassembleCode();
-    };
-
-    main();
-   </script>
+    <script src="dist/bundle.js"></script>
   </body>
 </html>
