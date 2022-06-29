@@ -23186,8 +23186,9 @@
 
     function disassembleCode() {
       statusDiv.innerText = 'Disassembling...';
+      const code = editor.getCode();
       ops = [];
-      pyodide.runPython(`import dis; dis.dis('''${editor.getCode()}''')`);
+      pyodide.runPython(`import dis; dis.dis('''${code}''')`);
       statusDiv.innerHTML = '';
       disTable.setAttribute('operations', JSON.stringify(ops));
       permalink.setAttribute('code', code);

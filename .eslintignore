@@ -1,6 +1,7 @@
 node_modules/*
 docs/*
 docs-src/*
+dist/*
 rollup-config.js
 custom-elements.json
 package-lock.json
