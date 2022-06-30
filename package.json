@@ -1,5 +1,7 @@
 {
   "name": "dis-this",
+  "repository": "https://github.com/pamelafox/dis-this",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",
     "@babel/core": "^7.11.0",
