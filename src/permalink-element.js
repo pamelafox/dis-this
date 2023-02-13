@@ -18,11 +18,7 @@ export class Permalink extends LitElement {
       .replace(/\)/g, '%29');
     return html`
       <label for="permalink-input">Permalink:</label>
-      <input
-        type="url"
-        id="permalink-input"
-        value=${url}
-        style="width: 600px" />
+      <input type="url" id="permalink-input" value=${url} style="width: 600px" />
     `;
   }
 }

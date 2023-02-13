@@ -45,13 +45,12 @@ async function main() {
 
   function handleStdOut(output) {
     console.log(output);
-    if (output.startsWith('3.')) { // Python version
+    if (output.startsWith('3.')) {
+      // Python version
       document.getElementById('version-number').innerText = output.split(' ')[0];
       return;
     }
-    const matches = output.match(
-      /\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/
-    );
+    const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
     if (!matches) {
       return;
     }
@@ -75,7 +74,7 @@ async function main() {
   if (!code) {
     code = `def feet_to_meters(feet):
     result = 0.3048 * feet
-    return result`
+    return result`;
     call = 'feet_to_meters(10)';
   }
   editor = new HighlightableEditor(codeDiv, code, (lineNo) => {

@@ -65,9 +65,7 @@
               <td>${operation.lineNo}</td>
               <td>${operation.offset}</td>
               <td>
-                <a
-                  href="https://docs.python.org/3/library/dis.html#opcode-${operation.opcode}"
-                  target="_blank">
+                <a href="https://docs.python.org/3/library/dis.html#opcode-${operation.opcode}" target="_blank">
                   ${operation.opcode}
                 </a>
               </td>
@@ -82,9 +80,7 @@
 
     onMouseover(lineNo) {
       this.activeLine = lineNo;
-      this.dispatchEvent(
-        new CustomEvent('line-highlight', {detail: {line: lineNo}})
-      );
+      this.dispatchEvent(new CustomEvent('line-highlight', {detail: {line: lineNo}}));
     }
   }
 
@@ -108,11 +104,7 @@
         .replace(/\)/g, '%29');
       return $`
       <label for="permalink-input">Permalink:</label>
-      <input
-        type="url"
-        id="permalink-input"
-        value=${url}
-        style="width: 600px" />
+      <input type="url" id="permalink-input" value=${url} style="width: 600px" />
     `;
     }
   }
@@ -23215,13 +23207,12 @@
 
     function handleStdOut(output) {
       console.log(output);
-      if (output.startsWith('3.')) { // Python version
+      if (output.startsWith('3.')) {
+        // Python version
         document.getElementById('version-number').innerText = output.split(' ')[0];
         return;
       }
-      const matches = output.match(
-        /\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/
-      );
+      const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
       if (!matches) {
         return;
       }
@@ -23262,7 +23253,6 @@
     permalinkDiv.appendChild(permalink);
 
     pyodide = await loadPyodide({
-      //indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/',
       indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/',
       stdout: handleStdOut,
     });
