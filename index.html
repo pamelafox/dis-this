@@ -19,15 +19,30 @@
         margin-bottom: 12px;
         max-width: 700px;
       }
+      #output-area {
+        margin-top: 15px;
+      }
+      footer {
+        margin-top: 80px;
+      }
     </style>
     <style></style>
   </head>
   <body>
     <div class="container">
       <h1>Disassemble Python code</h1>
-      <label>Type Python code here:
+      <br/>
+      <label>Enable adaptive interpreter?
+        <input id="adaptive-checkbox" type="checkbox" checked/>
+      </label>
+      <br/>
+      <label>Python function definition:
         <br />
         <div id="code-area"></div>
+      </label><br/>
+      <label>Function call:
+        <br />
+        <input id="call-input" type="text" />
       </label>
       <br />
       <button id="button" type="button" class="btn btn-primary" disabled>
@@ -35,10 +50,13 @@
       </button>
       <span id="status">Loading Pyodide...</span>
 
-      <div id="table-area"></div>
-      <div id="permalink-area"></div>
+      <div id="output-area">
+        <p>Python version: <span id="version-number"></span></p>
+        <div id="table-area"></div>
+        <div id="permalink-area"></div>
+      </div>
 
-      <div style="margin-top: 80px">
+      <footer>
         <p>
           Source code on
           <a href="https://github.com/pamelafox/dis-this" target="_blank">
@@ -54,7 +72,8 @@
         </p>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/pyodide/v0.19.0/full/pyodide.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js"></script>
     <script src="dist/bundle.js"></script>
   </body>
 </html>
