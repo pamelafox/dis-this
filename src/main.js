@@ -44,7 +44,6 @@ async function main() {
   }
 
   function handleStdOut(output) {
-    console.log(output);
     if (output.startsWith('3.')) {
       // Python version
       document.getElementById('version-number').innerText = output.split(' ')[0];
