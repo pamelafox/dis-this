@@ -56,6 +56,7 @@ export default class HighlightableEditor {
   }
 
   highlightLine(lineNo) {
+    if (lineNo <= 0) return;
     const docPosition = this.editorView.state.doc.line(lineNo).from;
     this.editorView.dispatch({effects: addLineHighlight.of(docPosition)});
   }

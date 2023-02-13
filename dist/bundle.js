@@ -23166,6 +23166,7 @@
     }
 
     highlightLine(lineNo) {
+      if (lineNo <= 0) return;
       const docPosition = this.editorView.state.doc.line(lineNo).from;
       this.editorView.dispatch({effects: addLineHighlight.of(docPosition)});
     }
@@ -23176,6 +23177,7 @@
       editor,
       ops = [],
       disTable,
+      callMode = false,
       permalink;
     const codeDiv = document.getElementById('code-area');
     const button = document.getElementById('button');
@@ -23190,14 +23192,21 @@
       const functionName = functionCall.split('(')[0];
       ops = [];
       const enableAdaptive = document.getElementById('adaptive-checkbox').checked ? 'True' : 'False';
-      pyodide.runPython(`
-import sys, dis
-print(sys.version)
-${code}
-for _ in range(10):
-  ${functionCall}
-dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})
-    `);
+      // Support the old way of disassembling a sequence of statements
+      if (!functionCall) {
+        callMode = false;
+        pyodide.runPython(`import dis; dis.dis('''${code}''');`);
+      } else {
+        callMode = true;
+        pyodide.runPython(`
+  import sys, dis
+  print(sys.version)
+  ${code}
+  for _ in range(10):
+    ${functionCall}
+  dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})
+      `);
+      }
       statusDiv.innerHTML = '';
       disTable.setAttribute('operations', JSON.stringify(ops));
       permalink.setAttribute('code', code);
@@ -23219,7 +23228,7 @@ dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptiv
       let lineNo;
       if (typeof matches[1] !== 'undefined') {
         // Some instructions start with a line number
-        lineNo = parseInt(matches[1], 10) - 3;
+        lineNo = parseInt(matches[1], 10) - (callMode ? 3 : 0);
       } else {
         // If not, assume line number is same as most recent line number
         lineNo = ops[ops.length - 1].lineNo;
