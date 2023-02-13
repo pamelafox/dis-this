@@ -41,6 +41,7 @@ async function main() {
     disTable.setAttribute('operations', JSON.stringify(ops));
     permalink.setAttribute('code', code);
     permalink.setAttribute('call', functionCall);
+    permalink.setAttribute('adaptive', enableAdaptive);
   }
 
   function handleStdOut(output) {
@@ -76,6 +77,8 @@ async function main() {
     return result`;
     call = 'feet_to_meters(10)';
   }
+  let adaptive = new URLSearchParams(window.location.search).get('adaptive');
+  document.getElementById('adaptive-checkbox').checked = (adaptive === 'True');
   editor = new HighlightableEditor(codeDiv, code, (lineNo) => {
     disTable.setAttribute('activeLine', lineNo);
   });
