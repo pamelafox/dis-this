@@ -4,6 +4,7 @@ export class Permalink extends LitElement {
   static properties = {
     code: {type: String},
     call: {type: String},
+    adaptive: {type: String},
   };
 
   constructor() {
@@ -13,7 +14,7 @@ export class Permalink extends LitElement {
   render() {
     if (!this.code) return;
 
-    const url = `${window.location.origin}/?code=${encodeURIComponent(this.code)}&call=${encodeURIComponent(this.call)}`
+    const url = `${window.location.origin}/?code=${encodeURIComponent(this.code)}&call=${encodeURIComponent(this.call)}&adaptive=${this.adaptive}`
       .replace(/\(/g, '%28')
       .replace(/\)/g, '%29');
     return html`
