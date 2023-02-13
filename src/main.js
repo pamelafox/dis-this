@@ -92,7 +92,6 @@ async function main() {
   permalinkDiv.appendChild(permalink);
 
   pyodide = await loadPyodide({
-    //indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.19.0/full/',
     indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/',
     stdout: handleStdOut,
   });
