@@ -4,5 +4,6 @@
   "singleQuote": true,
   "bracketSpacing": false,
   "arrowParens": "always",
-  "bracketSameLine": true
+  "bracketSameLine": true,
+  "printWidth": 127
 }

@@ -38,9 +38,7 @@ export class DisTable extends LitElement {
               <td>${operation.lineNo}</td>
               <td>${operation.offset}</td>
               <td>
-                <a
-                  href="https://docs.python.org/3/library/dis.html#opcode-${operation.opcode}"
-                  target="_blank">
+                <a href="https://docs.python.org/3/library/dis.html#opcode-${operation.opcode}" target="_blank">
                   ${operation.opcode}
                 </a>
               </td>
@@ -55,9 +53,7 @@ export class DisTable extends LitElement {
 
   onMouseover(lineNo) {
     this.activeLine = lineNo;
-    this.dispatchEvent(
-      new CustomEvent('line-highlight', {detail: {line: lineNo}})
-    );
+    this.dispatchEvent(new CustomEvent('line-highlight', {detail: {line: lineNo}}));
   }
 }
 
