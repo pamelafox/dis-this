@@ -19,8 +19,11 @@
         margin-bottom: 12px;
         max-width: 700px;
       }
-      #output-area {
+      #output-area, #error-area {
         margin-top: 15px;
+      }
+      #error-area {
+        max-width: 700px;
       }
       footer {
         margin-top: 80px;
@@ -50,7 +53,9 @@
       </button>
       <span id="status">Loading Pyodide...</span>
 
-      <div id="output-area">
+      <pre id="error-area"  style="display: none;">
+      </pre>
+      <div id="output-area" style="display: none;">
         <p>Python version: <span id="version-number"></span></p>
         <div id="table-area"></div>
         <div id="permalink-area"></div>
