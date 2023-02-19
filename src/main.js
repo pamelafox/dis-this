@@ -8,7 +8,8 @@ async function main() {
     ops = [],
     disTable,
     callMode = false,
-    permalink;
+    permalink,
+    pythonVersion;
   const codeDiv = document.getElementById('code-area');
   const button = document.getElementById('button');
   const statusDiv = document.getElementById('status');
@@ -31,13 +32,18 @@ async function main() {
     } else {
       callMode = true;
       try {
+        let disLine = `dis.dis(${functionName})`;
+        if (enableAdaptive === 'True') {
+          disLine = `dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})`;
+        }
+
         pyodide.runPython(`
 import sys, dis
 print(sys.version)
 ${code}
 for _ in range(10):
   ${functionCall}
-dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})
+${disLine}
         `);
       } catch (e) {
         statusDiv.innerText = '';
@@ -54,6 +60,7 @@ dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptiv
     permalink.setAttribute('code', code);
     permalink.setAttribute('call', functionCall);
     permalink.setAttribute('adaptive', enableAdaptive);
+    permalink.setAttribute('version', pythonVersion);
   }
 
   function handleStdOut(output) {
@@ -81,6 +88,33 @@ dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptiv
     ops.push({lineNo, offset, opcode, param, paramD});
   }
 
+  async function loadPyodideScript() {
+    const versionMap = {
+      3.11: 'dev',
+      '3.10': 'v0.22.1',
+      3.9: 'v0.19.1',
+    };
+    if (pythonVersion !== '3.11') {
+      document.getElementById('adaptive-area').style.display = 'none';
+    }
+    const pyodideVersion = versionMap[pythonVersion];
+    const scriptUrl = `https://cdn.jsdelivr.net/pyodide/${pyodideVersion}/full/pyodide.js`;
+
+    const script = document.createElement('script');
+    script.src = scriptUrl;
+    script.onload = async () => {
+      pyodide = await loadPyodide({
+        indexURL: `https://cdn.jsdelivr.net/pyodide/${pyodideVersion}/full/`,
+        stdout: handleStdOut,
+      });
+      statusDiv.innerText = '';
+      button.removeAttribute('disabled');
+      button.addEventListener('click', disassembleCode);
+      code && disassembleCode();
+    };
+    document.head.appendChild(script);
+  }
+
   let code = new URLSearchParams(window.location.search).get('code');
   let call = new URLSearchParams(window.location.search).get('call');
   if (!code) {
@@ -89,8 +123,11 @@ dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptiv
     return result`;
     call = 'feet_to_meters(10)';
   }
+  pythonVersion = new URLSearchParams(window.location.search).get('version') || '3.11';
+  document.getElementById('version-select').value = pythonVersion;
   let adaptive = new URLSearchParams(window.location.search).get('adaptive');
-  document.getElementById('adaptive-checkbox').checked = (adaptive === 'True');
+  document.getElementById('adaptive-checkbox').checked = pythonVersion == '3.11' && adaptive === 'True';
+
   editor = new HighlightableEditor(codeDiv, code, (lineNo) => {
     disTable.setAttribute('activeLine', lineNo);
   });
@@ -104,14 +141,12 @@ dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptiv
   permalink = document.createElement('permalink-element');
   permalinkDiv.appendChild(permalink);
 
-  pyodide = await loadPyodide({
-    indexURL: 'https://cdn.jsdelivr.net/pyodide/dev/full/',
-    stdout: handleStdOut,
+  document.getElementById('version-select').addEventListener('change', async () => {
+    pythonVersion = document.getElementById('version-select').value;
+    permalink.setAttribute('version', pythonVersion);
+    window.location.search = permalink.path;
   });
-  statusDiv.innerText = '';
-  button.removeAttribute('disabled');
-  button.addEventListener('click', disassembleCode);
-  code && disassembleCode();
+  await loadPyodideScript();
 }
 
 main();
