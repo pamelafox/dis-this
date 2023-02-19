@@ -14,6 +14,8 @@ async function main() {
   const statusDiv = document.getElementById('status');
   const tableDiv = document.getElementById('table-area');
   const permalinkDiv = document.getElementById('permalink-area');
+  const errorDiv = document.getElementById('error-area');
+  const outputDiv = document.getElementById('output-area');
 
   function disassembleCode() {
     statusDiv.innerText = 'Disassembling...';
@@ -28,16 +30,26 @@ async function main() {
       pyodide.runPython(`import dis; dis.dis('''${code}''');`);
     } else {
       callMode = true;
-      pyodide.runPython(`
-  import sys, dis
-  print(sys.version)
-  ${code}
-  for _ in range(10):
-    ${functionCall}
-  dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})
-      `);
+      try {
+        pyodide.runPython(`
+import sys, dis
+print(sys.version)
+${code}
+for _ in range(10):
+  ${functionCall}
+dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})
+        `);
+      } catch (e) {
+        statusDiv.innerText = '';
+        errorDiv.style.display = 'block';
+        outputDiv.style.display = 'none';
+        errorDiv.innerText = e;
+        return;
+      }
     }
-    statusDiv.innerHTML = '';
+    statusDiv.innerText = '';
+    errorDiv.style.display = 'none';
+    outputDiv.style.display = 'block';
     disTable.setAttribute('operations', JSON.stringify(ops));
     permalink.setAttribute('code', code);
     permalink.setAttribute('call', functionCall);
