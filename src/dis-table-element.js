@@ -39,9 +39,7 @@ export class DisTable extends LitElement {
               <td>${operation.lineNo}</td>
               <td>${operation.offset}</td>
               <td>
-                <a href="${this.links[operation.opcode]}" target="_blank">
-                  ${operation.opcode}
-                </a>
+                <a href="${this.links[operation.opcode]}" target="_blank"> ${operation.opcode} </a>
               </td>
               <td>${operation.param}</td>
               <td>${operation.paramD}</td>
