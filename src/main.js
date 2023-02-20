@@ -1,6 +1,7 @@
 import './dis-table-element.js';
 import './permalink-element.js';
 import HighlightableEditor from './highlightable-editor.js';
+import opcodeLinks from './links.json';
 
 async function main() {
   let pyodide,
@@ -133,6 +134,7 @@ ${disLine}
   });
   document.getElementById('call-input').value = call;
   disTable = document.createElement('dis-table-element');
+  disTable.setAttribute('links', JSON.stringify(opcodeLinks[pythonVersion]));
   disTable.setAttribute('operations', JSON.stringify(ops));
   disTable.addEventListener('line-highlight', (e) => {
     editor.highlightLine(e.detail.line);

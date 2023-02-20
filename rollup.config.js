@@ -1,5 +1,6 @@
 import resolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
+import json from '@rollup/plugin-json';
 
 // `npm run build` -> `production` is true
 // `npm run dev` -> `production` is false
@@ -13,6 +14,7 @@ export default {
     sourcemap: true,
   },
   plugins: [
+    json(),
     resolve(), // tells Rollup how to find date-fns in node_modules
     production && terser(), // minify, but only in production
   ],

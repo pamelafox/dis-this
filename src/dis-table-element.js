@@ -4,6 +4,7 @@ export class DisTable extends LitElement {
   static properties = {
     operations: {type: Array},
     activeLine: {type: Number},
+    links: {type: Object},
   };
 
   static styles = css`
@@ -38,7 +39,7 @@ export class DisTable extends LitElement {
               <td>${operation.lineNo}</td>
               <td>${operation.offset}</td>
               <td>
-                <a href="https://docs.python.org/3/library/dis.html#opcode-${operation.opcode}" target="_blank">
+                <a href="${this.links[operation.opcode]}" target="_blank">
                   ${operation.opcode}
                 </a>
               </td>
