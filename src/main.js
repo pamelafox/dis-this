@@ -35,7 +35,7 @@ async function main() {
       try {
         let disLine = `dis.dis(${functionName})`;
         if (enableAdaptive === 'True') {
-          disLine = `dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=${enableAdaptive})`;
+          disLine = `dis.dis(${functionName}, adaptive=${enableAdaptive}, show_caches=False)`;
         }
 
         pyodide.runPython(`
@@ -70,7 +70,7 @@ ${disLine}
       document.getElementById('version-number').innerText = output.split(' ')[0];
       return;
     }
-    const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\(\w+\))?/);
+    const matches = output.match(/\s*(\d+)?\s+(\d+)\s+([A-Z_]+)\s*(\d+)?\s*(\([^\)]+\))?/);
     if (!matches) {
       return;
     }

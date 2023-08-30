@@ -10,7 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
     <style>
       .cm-editor {
-        width: 700px;
+        width: 100%;
         height: auto;
         border: 1px solid #ccc;
       }
@@ -19,6 +19,17 @@
         margin-bottom: 12px;
         max-width: 700px;
       }
+      #input-area {
+        float: left;
+        width: 48%;
+        position: sticky;
+        top: 0;
+      }
+      #output-area {
+        float: right;
+        margin-left: 20px;
+        width: 48%;
+      }
       #output-area, #error-area {
         margin-top: 15px;
       }
@@ -26,6 +37,7 @@
         max-width: 700px;
       }
       footer {
+        clear: both;
         margin-top: 80px;
       }
     </style>
@@ -35,6 +47,7 @@
     <div class="container">
       <h1>Disassemble Python code</h1>
       <br/>
+      <div id="input-area">
       <label>Major Python version:
         <select id="version-select">
           <option selected>3.11</option>
@@ -64,10 +77,13 @@
 
       <pre id="error-area"  style="display: none;">
       </pre>
+      
+    </div>
+
       <div id="output-area" style="display: none;">
+        <div id="permalink-area"></div>
         <p>Python version: <span id="version-number"></span></p>
         <div id="table-area"></div>
-        <div id="permalink-area"></div>
       </div>
 
       <footer>

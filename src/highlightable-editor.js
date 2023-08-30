@@ -23,7 +23,7 @@ const lineHighlightField = StateField.define({
 });
 
 const lineHighlightMark = Decoration.line({
-  attributes: {style: 'background-color: yellow'},
+  attributes: {style: 'background-color: #d2ffff'},
 });
 
 export default class HighlightableEditor {

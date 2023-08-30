@@ -9,7 +9,7 @@ export class DisTable extends LitElement {
 
   static styles = css`
     .highlighted {
-      background-color: yellow;
+      background-color: #d2ffff;
     }
   `;
 
